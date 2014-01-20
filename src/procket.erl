@@ -63,7 +63,8 @@
         unix_path_max/0,
         sockaddr_common/2,
         ntohl/1,
-        ntohs/1
+        ntohs/1,
+        family/1
     ]).
 % for debugging
 -export([
