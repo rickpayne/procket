@@ -58,7 +58,6 @@ main(int argc, char *argv[])
     PROCKET_STATE *ps = NULL;
     int ch = 0;
 
-
     ps = calloc(1, sizeof(PROCKET_STATE));
 
     if (ps == NULL)
@@ -72,7 +71,7 @@ main(int argc, char *argv[])
 
     ps->fdtype = PROCKET_FD_SOCKET;
 
-    while ( (ch = getopt(argc, argv, "b:d:F:hI:p:P:T:u:v")) != -1) {
+    while ( (ch = getopt(argc, argv, "b:d:F:hI:p:P:T:u:vz")) != -1) {
         switch (ch) {
             case 'b':   /* listen backlog */
                 ps->backlog = atoi(optarg);
@@ -126,6 +125,9 @@ main(int argc, char *argv[])
                 break;
             case 'v':
                 ps->verbose++;
+                break;
+            case 'z':
+                ps->isis = 1;
                 break;
             case 'h':
             default:
@@ -301,6 +303,25 @@ procket_create_socket(PROCKET_STATE *ps)
         (void)snprintf(ifr.ifr_name, IFNAMSIZ, "%s", ps->ifname);
         if (setsockopt(ps->s, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0)
             return -1;
+
+        if(ps->isis) {
+          char mcast_mac[] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x14};
+
+          // Get IfIndex
+          if (ioctl(ps->s, SIOCGIFINDEX, &ifr) < 0)
+            return -1;
+
+          memcpy(&ifr.ifr_ifru.ifru_addr.sa_data[0], mcast_mac, 6);
+          ifr.ifr_hwaddr.sa_family = AF_UNSPEC;
+          if (ioctl(ps->s, SIOCADDMULTI, &ifr) < 0)
+            return -1;
+
+          memcpy(&ifr.ifr_ifru.ifru_addr.sa_data[0], mcast_mac, 6);
+          ifr.ifr_ifru.ifru_addr.sa_data[5] = 0x15;
+          ifr.ifr_hwaddr.sa_family = AF_UNSPEC;
+          if (ioctl(ps->s, SIOCADDMULTI, &ifr) < 0)
+            return -1;
+        }
     }
 #endif
 

@@ -359,6 +359,9 @@ get_switch({dev, Dev}) when is_list(Dev) ->
             throw({bad_device, Dev})
     end;
 
+get_switch({isis}) ->
+    "-z";
+
 % Ignore any other arguments
 get_switch(_Arg) ->
     "".

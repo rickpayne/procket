@@ -79,6 +79,7 @@ typedef struct {
     int type;               /* socket type: SOCK_STREAM */
     int protocol;           /* socket protocol: IPPROTO_TCP */
     int backlog;            /* Listen backlog */
+    int isis;               /* Add ISIS MAC addresses to interface */
 } PROCKET_STATE;
 
 
